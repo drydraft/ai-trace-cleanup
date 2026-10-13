@@ -310,7 +310,12 @@ def main(out=None):
     out = out or os.path.join(os.path.dirname(os.path.abspath(__file__)), "sample-dirty.docx")
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
         for name, text in build():
-            z.writestr(name, text.encode("utf-8"))
+            # 固定时间戳：样本是被提交进仓库的回归基准，每次跑测试都把它改成
+            # 「已修改」是不能接受的（zip 头里的 mtime 会变）。
+            info = zipfile.ZipInfo(name, date_time=(2026, 1, 1, 0, 0, 0))
+            info.compress_type = zipfile.ZIP_DEFLATED
+            info.external_attr = 0o644 << 16
+            z.writestr(info, text.encode("utf-8"))
     u()
     print("已生成脏样本：%s" % out)
     return out
