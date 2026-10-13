@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320"
+     role="img" aria-labelledby="gateTitle gateDesc">
+  <title id="gateTitle">落盘前的七项校验</title>
+  <desc id="gateDesc">清理脚本写入文件之前自动跑七项校验：G1 包结构不变、G2 非文本部件逐字节不变、
+    G3 逐字节重放证明、G4 语义 token 集合不变、G5 段落与 run 骨架不变、G6 XML 可解析、G7 幂等。
+    任何一项不通过，改动整体丢弃，原稿分毫未动。其中 G3 证明「说到的都做到了」，
+    G4 证明「没说到的没被碰」。</desc>
+
+  <defs>
+    <style>
+      .board { fill: #F6F2EA; }
+      .cell  { fill: #FFFDF8; stroke: #DFD7C8; stroke-width: 1; }
+      .muted { fill: #8C8478; }
+      .ink   { fill: #1B1916; }
+      .body  { fill: #3B3730; }
+      .red   { fill: #BF3B2C; }
+      .sans  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace; }
+      .track { letter-spacing: 2.2; }
+    </style>
+  </defs>
+
+  <rect class="board" width="1200" height="320" rx="20"/>
+  <rect x="0.5" y="0.5" width="1199" height="319" rx="20" fill="none" stroke="#E7DFD0"/>
+
+  <text class="mono muted track" x="64" y="64" font-size="16">VERIFY GATE · docx_guard.py</text>
+
+  <text class="sans ink" x="64" y="106" font-size="24">落盘前跑七项校验：任何一项不过，改动整体丢弃，原稿分毫未动。</text>
+
+  <g id="gates">
+    <rect class="cell" x="64"   y="136" width="142" height="60" rx="6"/>
+    <text class="mono ink" x="82" y="164" font-size="17" font-weight="700">G1</text>
+    <text class="sans body" x="82" y="186" font-size="15">包结构</text>
+
+    <rect class="cell" x="218"  y="136" width="142" height="60" rx="6"/>
+    <text class="mono ink" x="236" y="164" font-size="17" font-weight="700">G2</text>
+    <text class="sans body" x="236" y="186" font-size="15">保护区</text>
+
+    <!-- G3：整套论证的地基，用红色标注出来 -->
+    <rect x="372" y="136" width="142" height="60" rx="6" fill="#FBF0EE" stroke="#BF3B2C" stroke-width="1.4"/>
+    <text class="mono red" x="390" y="164" font-size="17" font-weight="700">G3</text>
+    <text class="sans red" x="390" y="186" font-size="15" font-weight="600">逐字节重放</text>
+
+    <rect class="cell" x="526"  y="136" width="142" height="60" rx="6"/>
+    <text class="mono ink" x="544" y="164" font-size="17" font-weight="700">G4</text>
+    <text class="sans body" x="544" y="186" font-size="15">语义 token</text>
+
+    <rect class="cell" x="680"  y="136" width="142" height="60" rx="6"/>
+    <text class="mono ink" x="698" y="164" font-size="17" font-weight="700">G5</text>
+    <text class="sans body" x="698" y="186" font-size="15">段落骨架</text>
+
+    <rect class="cell" x="834"  y="136" width="142" height="60" rx="6"/>
+    <text class="mono ink" x="852" y="164" font-size="17" font-weight="700">G6</text>
+    <text class="sans body" x="852" y="186" font-size="15">XML 解析</text>
+
+    <rect class="cell" x="988"  y="136" width="142" height="60" rx="6"/>
+    <text class="mono ink" x="1006" y="164" font-size="17" font-weight="700">G7</text>
+    <text class="sans body" x="1006" y="186" font-size="15">幂等</text>
+  </g>
+
+  <g id="why">
+    <path d="M64 232 L57 244 L64 256" fill="none" stroke="#BF3B2C" stroke-width="1.6"/>
+    <path d="M56 232 L49 244 L56 256" fill="none" stroke="#BF3B2C" stroke-width="1.6"/>
+    <text class="sans body" x="74" y="250" font-size="18">G3 把每一处替换在原稿上重放，结果与清理后的文件逐字节相同 —— 证明「说到的都做到了」。</text>
+    <text class="sans body" x="74" y="282" font-size="18">G4 检查数字 · URL · 代码标识符的集合前后完全相等 —— 证明「没说到的没被碰」。</text>
+  </g>
+</svg>

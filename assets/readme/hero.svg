@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380"
+     role="img" aria-labelledby="heroTitle heroDesc">
+  <title id="heroTitle">ai-trace-cleanup — Word 稿件去 AI 痕迹工具</title>
+  <desc id="heroDesc">左侧是项目名与一句话价值：交付 Word 稿前跑一遍，把 AI 痕迹清掉；机械层自动替换，语义与版式只出建议。
+    右侧列出八层判据，其中 I/S/P 三层（不可见字符、空白与间距、标点符号，共 20 条规则）可自动落盘，
+    M/B/F/L/C 五层（Markdown 残留、段落与换行、格式与样式、语言层 AI 味、内容层，共 45 条规则）只出建议。</desc>
+
+  <defs>
+    <style>
+      .board { fill: #F6F2EA; }
+      .rule  { stroke: #DFD7C8; stroke-width: 1; }
+      .muted { fill: #8C8478; }
+      .ink   { fill: #1B1916; }
+      .body  { fill: #3B3730; }
+      .red   { fill: #BF3B2C; }
+      .teal  { fill: #2C6E63; }
+      .sans  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace; }
+      .track { letter-spacing: 2.2; }
+    </style>
+  </defs>
+
+  <rect class="board" width="1200" height="380" rx="20"/>
+  <rect x="0.5" y="0.5" width="1199" height="379" rx="20" fill="none" stroke="#E7DFD0"/>
+
+  <!-- ── 左：身份与价值 ─────────────────────────────────────────── -->
+  <g id="title-block">
+    <text class="mono muted track" x="64" y="78" font-size="16">WORD · CLI · PI AGENT SKILL</text>
+
+    <text class="sans ink" x="64" y="152" font-size="56" font-weight="700">ai-trace-cleanup</text>
+
+    <text class="sans body" x="64" y="204" font-size="23">交付 Word 稿前跑一遍，把 AI 痕迹清掉。</text>
+    <text class="sans body" x="64" y="236" font-size="23">机械层自动替换，语义与版式只出建议。</text>
+
+    <line class="rule" x1="64" y1="274" x2="592" y2="274"/>
+
+    <text class="mono muted" x="64" y="304" font-size="15">零依赖 · Python 3 标准库 · pip install 什么都不用装</text>
+    <text class="mono muted" x="64" y="330" font-size="15">只处理 .docx · 不改写 · 不润色 · 不动公式与图片</text>
+  </g>
+
+  <!-- ── 右：八层判据（真实规则分布） ───────────────────────────── -->
+  <g id="layers">
+    <!-- 标记符号 « »：工具报告里框住命中字符的那对括号。用路径画，不依赖字体，
+         也就不会像 U+27EA 那样被回退字体画成全宽括号。 -->
+    <path d="M702 64 L695 76 L702 88" fill="none" stroke="#BF3B2C" stroke-width="1.6"/>
+    <path d="M694 64 L687 76 L694 88" fill="none" stroke="#BF3B2C" stroke-width="1.6"/>
+    <text class="sans red" x="712" y="82" font-size="18" font-weight="600">3 层判据可自动落盘</text>
+
+    <line class="rule" x1="700" y1="100" x2="1136" y2="100"/>
+
+    <!-- 自动层 20 条 -->
+    <text class="mono red" x="700" y="132" font-size="18" font-weight="700">I</text>
+    <text class="sans body" x="730" y="131" font-size="17">不可见字符</text>
+    <text class="mono muted" x="1136" y="131" font-size="14" text-anchor="end">3 条规则</text>
+
+    <text class="mono red" x="700" y="162" font-size="18" font-weight="700">S</text>
+    <text class="sans body" x="730" y="161" font-size="17">空白与间距</text>
+    <text class="mono muted" x="1136" y="161" font-size="14" text-anchor="end">8 条规则</text>
+
+    <text class="mono red" x="700" y="192" font-size="18" font-weight="700">P</text>
+    <text class="sans body" x="730" y="191" font-size="17">标点符号</text>
+    <text class="mono muted" x="1136" y="191" font-size="14" text-anchor="end">9 条规则</text>
+
+    <!-- 边界线：上面三层自动，下面五层只建议 -->
+    <line x1="700" y1="208" x2="1136" y2="208" stroke="#BF3B2C" stroke-width="1.2" stroke-dasharray="3 4"/>
+
+    <text class="mono muted" x="700" y="240" font-size="18" font-weight="700">M</text>
+    <text class="sans body" x="730" y="239" font-size="17">Markdown 残留</text>
+    <text class="mono muted" x="1136" y="239" font-size="14" text-anchor="end">12 条规则</text>
+
+    <text class="mono muted" x="700" y="270" font-size="18" font-weight="700">B</text>
+    <text class="sans body" x="730" y="269" font-size="17">段落与换行</text>
+    <text class="mono muted" x="1136" y="269" font-size="14" text-anchor="end">6 条规则</text>
+
+    <text class="mono muted" x="700" y="300" font-size="18" font-weight="700">F</text>
+    <text class="sans body" x="730" y="299" font-size="17">格式与样式</text>
+    <text class="mono muted" x="1136" y="299" font-size="14" text-anchor="end">9 条规则</text>
+
+    <text class="mono muted" x="700" y="330" font-size="18" font-weight="700">L</text>
+    <text class="sans body" x="730" y="329" font-size="17">语言层 AI 味</text>
+    <text class="mono muted" x="1136" y="329" font-size="14" text-anchor="end">11 条规则</text>
+
+    <text class="mono muted" x="700" y="360" font-size="18" font-weight="700">C</text>
+    <text class="sans body" x="730" y="359" font-size="17">内容层</text>
+    <text class="mono muted" x="1136" y="359" font-size="14" text-anchor="end">7 条规则</text>
+  </g>
+</svg>

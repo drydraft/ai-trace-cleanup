@@ -1,0 +1,19 @@
+# 统一换行符，避免 Windows 开发机上出现 CRLF 噪声
+* text=auto eol=lf
+
+# 二进制
+*.docx binary
+*.png binary
+*.ico binary
+*.jpe?g binary
+*.gif binary
+
+# 文本类明确按 LF 存
+*.py text eol=lf
+*.md text eol=lf
+*.svg text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+
+# PowerShell 脚本：本仓库一律纯 ASCII，LF 即可
+*.ps1 text eol=lf

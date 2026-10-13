@@ -1,0 +1,26 @@
+# 生成的产物
+__pycache__/
+*.py[cod]
+
+# 审计与清理的产物
+*.ai-trace/
+*.applied.json
+*.tmp-ai-trace
+*.bak
+
+# 测试生成的中间文件
+tests/.readme-demo/
+tests/clean*.docx
+tests/word-real.docx
+tests/word-clean.docx
+tests/word-input.txt
+tests/word-text-out.txt
+tests/scan-*/
+tests/_*.txt
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
