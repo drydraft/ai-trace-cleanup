@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="420" height="64" viewBox="0 0 420 64"
+     role="img" aria-labelledby="sigTitle sigDesc">
+  <title id="sigTitle">README made with beautify-github-readme</title>
+  <desc id="sigDesc">校样纸风格的签名：左侧是校对标记，中间写明「README MADE WITH beautify-github-readme」，
+    右侧一个指向源仓库的箭头。</desc>
+
+  <defs>
+    <style>
+      .board { fill: #F6F2EA; }
+      .muted { fill: #8C8478; }
+      .ink   { fill: #1B1916; }
+      .red   { fill: #BF3B2C; }
+      .sans  { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif; }
+      .mono  { font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace; }
+    </style>
+  </defs>
+
+  <rect class="board" width="420" height="64" rx="10"/>
+  <rect x="0.5" y="0.5" width="419" height="63" rx="10" fill="none" stroke="#E7DFD0"/>
+
+  <!-- 校对标记 « ：与 hero 上同一个 motif，取自工具报告里框住命中字符的那对括号 -->
+  <path d="M34 22 L27 32 L34 42" fill="none" stroke="#BF3B2C" stroke-width="1.5"/>
+  <path d="M26 22 L19 32 L26 42" fill="none" stroke="#BF3B2C" stroke-width="1.5"/>
+
+  <text class="mono muted" x="50" y="27" font-size="11.5" letter-spacing="1.7">README MADE WITH</text>
+  <text class="sans ink" x="50" y="47" font-size="16" font-weight="600">beautify-github-readme</text>
+
+  <!-- 克制的指向源仓库的箭头 -->
+  <path d="M382 32 H402 M395 25.5 L402 32 L395 38.5" fill="none" stroke="#8C8478"
+        stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

@@ -264,6 +264,10 @@ docs/MAINTENANCE.md           维护说明、设计取舍、加规则的步骤
 CLI 部分与 skill 部分互不依赖：只用命令行也能跑，只用 skill 也能跑。
 维护说明、设计取舍、加规则的步骤见 [`docs/MAINTENANCE.md`](docs/MAINTENANCE.md)。
 
+<p align="center">
+  <a href="https://github.com/oil-oil/beautify-github-readme"><img src="./assets/readme/made-with-beautify.svg" width="300" alt="README made with beautify-github-readme"></a>
+</p>
+
 ## 许可证
 
 [MIT](LICENSE)
