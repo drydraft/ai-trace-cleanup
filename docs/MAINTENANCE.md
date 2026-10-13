@@ -92,7 +92,7 @@ python tests/selftest.py
 
 | 坑 | 表现 | 处理 |
 | --- | --- | --- |
-| Windows PowerShell 的 `>` 重定向会二次编码 | `python x.py > a.txt` 之后文件里中文全烂（emoji 直接丢失） | 重定向前先 `[Console]::OutputEncoding=[Text.Encoding]::UTF8`；或让脚本自己用 UTF-8 写文件 |
+| Windows 上 `>` 重定向会二次编码 | `python x.py > a.txt` 之后文件里中文变成 **GBK** 而不是 UTF-8（用 UTF-8 读会失败）；输出真 emoji 时 Python 直接报 `UnicodeEncodeError: 'gbk' codec can't encode character` | **别用 shell 重定向存中文输出。** 可靠做法：让脚本自己用 `open(..., encoding='utf-8')` 写文件（本仓库的 `--rules-out PATH` 就是这样）；或用 PowerShell 的 `[IO.File]::WriteAllText($p, $s, [Text.UTF8Encoding]::new($false))`。实测：**先设 `[Console]::OutputEncoding=[Text.Encoding]::UTF8` 并不能修好它**（子进程写重定向句柄时用的是 ANSI 代码页 cp936） |
 | PowerShell 控制台默认 GBK | 直接打印中文报 `UnicodeEncodeError` | 所有 CLI 入口都调 `docx_text.u()` 把 stdout/stderr 重设为 UTF-8 |
 | PowerShell 里反引号是转义符 | 用 `python -c "...`code`..."` 传含反引号的代码 → 代码被吃掉 | **别用 `python -c` 传含反引号的代码**，写成脚本文件再跑 |
 | `.ps1` 里写中文注释 | Windows PowerShell 5.1 按 ANSI 读，报莫名其妙的假错 | 存成 UTF-8 **with BOM**，或用 `pwsh`；本仓库的 `tests/*.ps1` 一律**纯 ASCII** 以绕过这个坑 |
