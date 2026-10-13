@@ -17,3 +17,7 @@
 
 # PowerShell 脚本：本仓库一律纯 ASCII，LF 即可
 *.ps1 text eol=lf
+
+# tests/*.ps1 只是测试助手，不计入 GitHub 的语言统计
+# （否则一个纯 Python 项目的语言条上会拄着 PowerShell）
+tests/*.ps1 linguist-documentation
