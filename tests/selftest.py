@@ -74,7 +74,63 @@ EXPECT = {
     "已处理 2 个,剩余 1 个": "已处理2个，剩余1个",
     "文本框里也有 3 个空格问题": "文本框里也有3个空格问题",
     "巡检工作总结 共 5 页": "巡检工作总结共5页",
+    # 文本级保护区：路径 / 命令 / 版本 / 时间 / 单位 / 代码段原样保留，
+    # 而同段里第 3 行的「共 3 处」照样要修 —— 两者同时成立才叫保护正确。
+    "保护路径 .github/workflows/ 共 3 个文件。": "保护路径 .github/workflows/ 共3个文件。",
+    r"路径 C:\Users\Administrator\.pi\agent\skills\ 下共 2 个目录。":
+        r"路径 C:\Users\Administrator\.pi\agent\skills\ 下共2个目录。",
+    "命令 python scripts/docx_scan.py --all 与版本 v0.1.0 都不许改，但共 3 处空格要删。":
+        "命令 python scripts/docx_scan.py --all 与版本 v0.1.0都不许改，但共3处空格要删。",
+    # 这一句最能说明取舍：`单位 10` 的交界空格要删（S01），而 `10 kg` 里的空格要留（掩码保护）。
+    "时间 9:30、单位 10 kg、邮箱 a@b.com、代码 `x = 1` 都不能动。":
+        "时间9:30、单位10 kg、邮箱 a@b.com、代码 `x = 1` 都不能动。",
 }
+
+#: T8 文本级保护区：这些 token 必须**整体**落在掩码里（一个字符都不许漏）
+MUST_MASK = [
+    ("保护 .github/workflows/ 这个路径", ".github/workflows"),
+    (r"放在C:\Users\Administrator\.pi\agent\skills\ 下",
+     "C:\\Users\\Administrator\\.pi\\agent\\skills\\"),
+    ("见 ~/.pi/agent/AGENTS.md 文件", "~/.pi/agent/AGENTS.md"),
+    ("运行 python scripts/docx_scan.py --all 即可", "--all"),
+    ("全量跑 docx_scan.py --rules P01,P03 即可", "--rules"),
+    ("用 `code span` 与 run-all.ps1 测", "`code span`"),
+    ("用 `code span` 与 run-all.ps1 测", "run-all.ps1"),
+    ("参考 docs/MAINTENANCE.md 与 tests/selftest.py", "docs/MAINTENANCE.md"),
+    ("参考 docs/MAINTENANCE.md 与 tests/selftest.py", "tests/selftest.py"),
+    ("网站 https://github.com/drydraft/ai-trace-cleanup 上",
+     "https://github.com/drydraft/ai-trace-cleanup"),
+    ("邮箱 a@b.com 可用", "a@b.com"),
+    ("函数 os.path.join 与 getElementById", "os.path.join"),
+    ("函数 os.path.join 与 getElementById", "getElementById"),
+    ("时间 9:30 与日期 2026-10-13", "9:30"),
+    ("时间 9:30 与日期 2026-10-13", "2026-10-13"),
+    ("版本 v0.1.0 与小数 1.5", "v0.1.0"),
+    ("版本 v0.1.0 与小数 1.5", "1.5"),
+    ("单位 10 kg 与 100 MB", "10 kg"),
+    ("单位 10 kg 与 100 MB", "100 MB"),
+    ("变量 %USERPROFILE% 与 $HOME", "%USERPROFILE%"),
+    ("数据 data.7z 与 ci.yml", "data.7z"),
+    ("斜杠 and/or 与 TCP/IP", "and/or"),
+    ("key: value 这一行", "key:"),
+    ("Note: 以下说明", "Note:"),
+    ("编号 JIRA-1234 与 UTF-8", "JIRA-1234"),
+    ("实体 &nbsp; 与 &#160;", "&nbsp;"),
+]
+
+#: T8 反向：这些必须**不**被保护，否则就把该做的修复挡住了
+MUST_NOT_MASK = [
+    "检查完成, 未发现异常.",              # P01 要把 , 和 . 转全角
+    "共 3 个问题，已处理 2 个",            # S01 要删中数之间那两个空格
+    "占比 50 ％，全角数字１２３",            # P07 要转全角数字，S03 要删空格
+    "省略号... 还有。。。两种写法",         # P03 要统一成 ……
+    "数量 10-20 台，另一处写作 A--B",       # P04 要把 -- 改破折号
+    "时间 9：30 使用了全角冒号",            # P08 要把全角冒号改半角
+    "温度应在 3～5 度之间。",              # P09 要把 ～ 改 -
+    "百分比 50 %",                        # S06 要删 % 前的空格
+    "号 2. UPS 电池组告警",                # S02 要报「UPS 电池组」之间那个空格
+    "作为一个 AI 语言模型",                # S02 与 C01 都要报这里
+]
 
 
 def main() -> int:
@@ -150,6 +206,28 @@ def main() -> int:
         return re.sub(r"(?<=>)[^<]*(?=</w:t>)", "", s).encode("utf-8")
     same = all(skeleton(a.data[n]) == skeleton(b.data[n]) for n in xml_changed)
     check(same, "XML 骨架未变（只有 <w:t> 里的字变了）")
+
+    print("\n── T8 文本级保护区（掩码）──")
+    from protect import masks_of as _masks
+
+    def _covered(text):
+        cov = set()
+        for a, b in _masks(text):
+            cov.update(range(a, b))
+        return cov
+
+    missed = []
+    for text, token in MUST_MASK:
+        cov = _covered(text)
+        i = text.index(token)
+        if not all(k in cov for k in range(i, i + len(token))):
+            missed.append("%s（来自 %r）" % (token, text))
+    check(not missed, "%d 个路径/命令/代码 token 整体受保护" % len(MUST_MASK),
+          ("漏保护：%s" % "、".join(missed)) if missed else "一个字符都不许漏")
+
+    over = [t for t in MUST_NOT_MASK if _masks(t)]
+    check(not over, "%d 个该修的没被误保护" % len(MUST_NOT_MASK),
+          ("被误保护：%s" % "、".join(over)) if over else "P01/P03/P04/P06/P07/P08/P09/S01/S02/S06 仍能命中")
 
     print("\n── T7 二次 apply 无事可做 ──")
     rc, out = run(os.path.join(ROOT, "scripts", "docx_apply.py"), CLEAN,

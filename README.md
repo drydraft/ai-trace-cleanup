@@ -139,6 +139,34 @@ $ python scripts/docx_apply.py tests/sample-dirty.docx --out tests/clean.docx --
 并把「段落字符坐标」映射回具体的 `run` —— 因为 Word 会把 `共 3 个` 这种句子按格式和编辑历史切成任意多段，
 那个空格很可能**独自占一个 run**，不建映射就永远删不掉它。
 
+## 路径、代码、命令行里的点号不动
+
+去 AI 味最常见的一刀是「把中文里的半角标点换成全角」。但文档里有一类 token，
+它们的点号和标点是**语义的一部分**，换了就废了：
+
+```text
+把脚本放在 .github/workflows/ 下        →  . 换成 。 就废了
+路径 C:\Users\Administrator\.pi\agent\    →  同样，而且路径里的空格也不能并
+调用 os.path.join 与 run-all.ps1 测     →  点都在名字里
+跑 python docx_scan.py --all 就行       →  -- 被当成破折号改成 ——
+时间是 9:30、单位是 10 kg、代码 `x = 1`   →  时间/单位/代码段都不许动
+```
+
+所以规则引擎动手前先扫一遍**掩码**：落在掩码里的字符，机械层**既不修改也不报告**
+（24 个家族，清单在 [`references/protection-index.md`](references/protection-index.md)）。
+关键是取舍分寸：
+
+| 保护 | 不保护（否则该修的永远修不了） |
+| --- | --- |
+| `.github/workflows/` 里的点、`C:\Users\x\` 里的整条路径 | `共 3 个` 里中数之间的空格（`S01` 要删） |
+| `` `x = 1` `` 代码段里的每一个字符 | `50 %` 里 `%` 前的空格（`S06` 要删） |
+| `--all` 这种命令行参数（前面的 `--` 不改破折号） | `A--B` 里的 `--`（`P04` 就是要把它改成 `——`） |
+| `9:30` 的半角冒号、`v0.1.0` 的版本点 | `9：30` 的全角冒号（`P08` 要把它改成半角） |
+| `10 kg` 里的空格（数值+单位是一个整体） | `50 %`、`3～5`、`１２３`（`S06`/`P09`/`P07` 要改它们） |
+
+三条硬规矩都有反向测试守着（`selftest.py` 的 T8：26 个正向用例 + 10 个反向用例）——
+谁把掩码写宽了、挡住了一条该做的修复，测试立刻变红。
+
 ## 快速开始
 
 零依赖，只用 Python 3 标准库（`zipfile` / `re` / `unicodedata`）：
@@ -189,6 +217,7 @@ python scripts/docx_guard.py "原稿.docx" "清理后.docx" --applied "清理后
 
 ```bash
 python scripts/docx_scan.py --rules-out references/rule-index.md
+python scripts/docx_scan.py --protections-out references/protection-index.md   # 文本级保护区家族
 ```
 
 <details>
@@ -228,7 +257,7 @@ powershell -File tests/run-all.ps1
   跑完清理后**再用 Word 把文件读回来比对文本** —— 这是「Word 打得开、没触发修复」的唯一可靠证据。
   手工拼的最小 docx 证明不了这一点。
 
-最近一次结果：`selftest` 65 条规则全覆盖、165 处命中、53 处自动替换全部通过；
+最近一次结果：`selftest` 65 条规则全覆盖、181 处命中、62 处自动替换全部通过（含 T8 的保护区正/反向用例）；
 真 Word 往返中 11 个部件里的 10 个受保护部件逐字节未变，Word 读回的文本与预期逐字相符。
 
 ## 只做什么 / 不做什么
@@ -254,7 +283,8 @@ workflows/audit-workflow.md   审计 5 阶段（只读）
 workflows/apply-workflow.md   清理 5 阶段（含校验门与回滚）
 references/taxonomy.md        ★ 八层逐条判据 / 反例 / 误伤风险
 references/verification.md    ★ G1–G7 校验门与不变量清单
-references/docx-protection.md 保护区：哪些字节绝对不能碰
+references/docx-protection.md 保护区：哪些字节 / 哪些字符序列绝对不能碰
+references/protection-index.md 文本级保护区（掩码）家族清单（自动生成）
 references/report-format.md   报告契约与退出码
 scripts/                      三个 CLI + 共享层 + 规则核
 assets/lexicon-zh.txt         中文 AI 味词表（可直接加词）

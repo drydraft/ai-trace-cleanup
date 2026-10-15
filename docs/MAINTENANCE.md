@@ -12,11 +12,13 @@ workflows/
 references/
   taxonomy.md                   【核查规范全文】八层逐条判据 / 反例 / 误伤风险
   rule-index.md                 规则目录（自动生成，勿手改）
-  docx-protection.md            保护区：哪些字节绝对不能碰（OOXML 视角）
+  docx-protection.md            保护区：哪些字节 / 哪些字符序列绝对不能碰（OOXML + 掩码两层）
+  protection-index.md           文本级保护区（掩码）家族清单（自动生成，勿手改）
   report-format.md              报告契约：report.md / report.json / .applied.json + 退出码
-  verification.md               【最后的校验规则】G1–G7、自检 T1–T7、不变量清单
+  verification.md               【最后的校验规则】G1–G7、自检 T1–T8、不变量清单
 scripts/
   docx_text.py                  共享层：段落/run 字符映射、保护区切分、字节级回写
+  protect.py                    文本级保护区（24 个掩码家族）—— 单一真理源
   rules_core.py                 I/S/P 三层规则（可落盘）+ Issue 结构 + 定点应用
   rules_report.py               M/B/F/L/C 五层规则（只出建议）
   docx_scan.py                  审计器（只读）→ report.md + report.json
@@ -68,6 +70,32 @@ tests/run-all.ps1               一键跑两个测试（已处理控制台编码
     Consolas 会回退到中日韩字体把它画成全宽括号，读起来像书名号。`«»` 是 Latin-1，任何字体都有。
     看不见的字符（零宽、NBSP、SHY…）一律换成人能读的名字，否则「命中了」但屏幕上什么都没有。
 
+## 加一条保护掩码（比加规则更常见）
+
+发现「某个 token 不该被任何规则碰」时，**加掩码，不要加规则**。
+
+```bash
+# 1) 在 scripts/protect.py 的 FAMILIES 里加一项：(id, 名称, 覆盖什么, 正则)
+# 2) 必须同时在 tests/selftest.py 的两个列表里各补一个用例：
+#    · MUST_MASK      —— 这个 token 必须整体落在掩码里
+#    · MUST_NOT_MASK  —— 确认没顺手把该修的也保护进去
+# 3) 重生成清单 + 跑自检
+python scripts/docx_scan.py --protections-out references/protection-index.md
+python tests/selftest.py
+# 4) 在 references/docx-protection.md 第五节的家族表里补一行说明
+```
+
+**加掩码的两个禁忌**（T8 会当场抓住）：
+
+1. **不许挡住该做的修复**。反例：给 `%` 加掩码 → `50 %` 永远修不了；给全角 `：` 加掩码 → `9：30` 永远修不了。
+   所以时间/单位/数字类掩码**只匹配半角字符**。
+2. **不许吞掉紧跟路径的中文正文**。掩码里的路径尾部不能以「后面没分隔符的中文串」结尾，
+   否则 `放在C:\temp下 共 3 个` 这种句子里，那句正文的 `共 3` 会静默漏报。
+   现在的写法只能到 `C:\temp`，`下` 留在掩码外 —— 这是故意的。
+
+掩码只影响机械层（I/S/P）的「改不改」，**不影响 M/B/F/L/C 的「报不报」**：
+代码段里的 `` `x` `` 依然会被 M05 指出来。
+
 ## 加一条规则：四步
 
 ```bash
@@ -108,7 +136,7 @@ python tests/word_roundtrip.py          # 只要真 Word 往返（需装 Word）
 ```
 
 `selftest.py` 里的 T1 覆盖率门是这套东西能长期活下去的关键：它把「加了一条规则却没人验证它到底会不会命中」
-变成一次构建失败。`word_roundtrip.py` 则用 Word COM 生成真 `.docx`，清理后再让 Word 读回来比对文本 ——
+变成一次构建失败。T8 是它的镜像：它保证「加了一条保护却没人验证它到底有没有生效」也变不成静默漏报。`word_roundtrip.py` 则用 Word COM 生成真 `.docx`，清理后再让 Word 读回来比对文本 ——
 这是「Word 打得开、没触发修复」的唯一可靠证据，手工拼的最小 docx 证明不了。
 
 ## 改 README 视觉层
