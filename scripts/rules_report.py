@@ -16,7 +16,8 @@ import os
 import re
 
 from docx_text import char_kind
-from rules_core import SEV_HARD, SEV_SUG, SEV_WARN, Issue, _anchor
+from protect import masks_of
+from rules_core import SEV_HARD, SEV_SUG, SEV_WARN, Issue, _anchor, _hits_mask
 
 LEXICON_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                             "assets", "lexicon-zh.txt")
@@ -120,8 +121,15 @@ M_PATTERNS = [
 def scan_markdown(para) -> list:
     text = para.text
     out = []
+    # M 层默认**不看**掩码 —— 代码段里的 `` `x` `` 依然要被 M05 报出来：
+    # 我们想让它「报而不改」，不是想让它看不见。
+    # 但 M11（转义符残留）是例外：`\` 在 Windows 路径里天天出现，
+    # `C:\Users\Administrator\.pi` 里的 `\.` 不是 Markdown 转义，报它就是在叫人删掉路径符号。
+    masks = masks_of(text)
     for rid, sev, title, pat, note in M_PATTERNS:
         for m in re.finditer(pat, text):
+            if rid == "M11" and _hits_mask(masks, m.start(), m.end()):
+                continue
             out.append(Issue(rule=rid, layer="M", severity=sev, part=para.part,
                              pid=para.pid, anchor=_anchor(para),
                              start=m.start(), end=m.end(), orig=m.group(0),

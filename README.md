@@ -154,6 +154,7 @@ $ python scripts/docx_apply.py tests/sample-dirty.docx --out tests/clean.docx --
 
 所以规则引擎动手前先扫一遍**掩码**：落在掩码里的字符，机械层**既不修改也不报告**
 （24 个家族，清单在 [`references/protection-index.md`](references/protection-index.md)）。
+M 层照常报（代码段里的 `` `x` `` 依然会被 M05 指出来），唯独 `M11` 会跳过路径里的 `\.`。
 关键是取舍分寸：
 
 | 保护 | 不保护（否则该修的永远修不了） |
@@ -257,7 +258,7 @@ powershell -File tests/run-all.ps1
   跑完清理后**再用 Word 把文件读回来比对文本** —— 这是「Word 打得开、没触发修复」的唯一可靠证据。
   手工拼的最小 docx 证明不了这一点。
 
-最近一次结果：`selftest` 65 条规则全覆盖、181 处命中、62 处自动替换全部通过（含 T8 的保护区正/反向用例）；
+最近一次结果：`selftest` 65 条规则全覆盖、180 处命中、62 处自动替换全部通过（含 T8 的保护区正/反向用例）；
 真 Word 往返中 11 个部件里的 10 个受保护部件逐字节未变，Word 读回的文本与预期逐字相符。
 
 ## 只做什么 / 不做什么
