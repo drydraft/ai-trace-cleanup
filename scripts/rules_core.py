@@ -72,24 +72,12 @@ class Issue:
         return SEV_MARK.get(self.severity, "·")
 
 
-# ---------------------------------------------------------------- 掩码（保护区）
+# ---------------------------------------------------------------- 掩码（文本级保护区）
+#
+# 具体有哪些家族、为什么这么写 → scripts/protect.py（单一真理源）。
+# 这里只负责使用它：落在掩码里的字符，I/S/P 三层既不修改，也不报告。
 
-MASK_PATTERNS = [
-    r"https?://[^\s\u3000，。、；：？！“”‘’（）《》【】」』]+",
-    r"[\w.+-]+@[\w-]+\.[\w.-]+",
-    r"\d+[.．]\d+(?:[.．]\d+)*",            # 小数 / 版本号
-    r"\d{1,3}(?:[,，]\d{3})+",              # 千分位
-    r"[\w-]+\.(?:docx?|xlsx?|pptx?|pdf|md|txt|py|json|ya?ml|js|ts|html?|csv|zip|png|jpe?g)\b",
-    r"[A-Za-z]{2,}-\d+",                    # JIRA-1234 / UTF-8 / ISO-9001
-    r"[A-Za-z_][A-Za-z0-9_]*_[A-Za-z0-9_]+",  # 代码标识符
-    r"\d+(?:\.\d+)*\s*(?:kg|km|ml|MB|GB|Hz|V|W|A)\b",
-]
-_MASK_RE = re.compile("|".join("(?:%s)" % p for p in MASK_PATTERNS))
-
-
-def masks_of(text: str) -> list:
-    """返回 [(s,e)]：落在这些区间内的字符任何规则都不许动。"""
-    return [(m.start(), m.end()) for m in _MASK_RE.finditer(text)]
+from protect import masks_of  # noqa: E402  (re-export：规则核的门面仍叫 masks_of)
 
 
 def _hits_mask(masks, s, e) -> bool:

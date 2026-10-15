@@ -1,6 +1,6 @@
 ---
 name: ai-trace-cleanup
-description: 审计并清除 Word（.docx）文档里的 AI 输出痕迹——数字/中英之间的多余空格、汉字中间的空格、半角标点混入中文、省略号与破折号写法不规范、零宽字符与不换行空格、Markdown 残留（**加粗**、##、- 列表、`code`、[链接](url)、|---|）、一句话一段、字体与字号漂移、加粗率过高，以及"首先/其次/最后""综上所述""值得注意的是""赋能/闭环/颗粒度""作为AI""希望对你有帮助"这类语言层与内容层 AI 味。机械层（可见/不可见字符、空格、标点）可自动替换并逐字节校验；结构、格式、语言、内容四层只出建议，永不落盘。Use when the user mentions 去AI味, 清洗AI痕迹, AI 痕迹, 机器味, 文档规范化, 排版清理, 校对格式, 检查空格, 数字前后有空格, 标点不对, 异常换行, Markdown 粘到 Word, 交付前检查, or asks to audit / clean / lint / de-AI a .docx or Word file before sending it out. 只处理 .docx；不处理 .md/.txt、不处理 PPT/Excel、不做改写或润色。
+description: 审计并清除 Word（.docx）文档里的 AI 输出痕迹——数字/中英之间的多余空格、汉字中间的空格、半角标点混入中文、省略号与破折号写法不规范、零宽字符与不换行空格、Markdown 残留（**加粗**、##、- 列表、`code`、[链接](url)、|---|）、一句话一段、字体与字号漂移、加粗率过高，以及"首先/其次/最后""综上所述""值得注意的是""赋能/闭环/颗粒度""作为AI""希望对你有帮助"这类语言层与内容层 AI 味。改标点时路径、命令行参数、代码段、域名与版本号里的点号受保护，不会被误改（如 .github/workflows/）。机械层（可见/不可见字符、空格、标点）可自动替换并逐字节校验；结构、格式、语言、内容四层只出建议，永不落盘。Use when the user mentions 去AI味, 清洗AI痕迹, AI 痕迹, 机器味, 文档规范化, 排版清理, 校对格式, 检查空格, 数字前后有空格, 标点不对, 异常换行, 句号被改了, 路径被改了, Markdown 粘到 Word, 交付前检查, or asks to audit / clean / lint / de-AI a .docx or Word file before sending it out. 只处理 .docx；不处理 .md/.txt、不处理 PPT/Excel、不做改写或润色。
 ---
 
 # AI 痕迹清理（Word 专用）
@@ -53,6 +53,9 @@ description: 审计并清除 Word（.docx）文档里的 AI 输出痕迹——�
 
 1. **先判语境，再判字符。** 半角逗号在 `1,000` 里是对的，在 `检查完成,` 里是错的。
    所有标点规则都必须看左右邻字符，禁止全局替换。反例一律写在 `references/taxonomy.md`。
+   **点号尤其危险：路径、文件名、域名、代码标识符里的 `.` 是名字的一部分，不是句号** ——
+   把 `.github/workflows/` 改成 `。github/workflows/` 就废了。这类 token 先被掩码整体保护
+   （24 个家族，见 `references/protection-index.md`），规则根本看不到它们。
 2. **先想误伤，再想覆盖。** 一条规则命中率 95% 但会破坏 1% 的正确内容 → 降级为建议，
    绝不自动改。标着「默认自动落盘 = 否」的规则（S02/S04/P02/P04/P06/P08/P09）必须先给人看。
 3. **抓大放小、只报硬信号。** 宁可漏报，不可让人在 40 条噪声里自己找那 3 条真问题。
@@ -68,7 +71,8 @@ SKILL.md                       ← 你在这里（边界 + 铁律 + 导航 + 核
 ├── references/
 │   ├── taxonomy.md            ← 【核查规范全文】8 层的逐条判据、反例、误伤风险
 │   ├── rule-index.md          ← 规则目录（自动生成，含 ID/强度/判定）
-│   ├── docx-protection.md     ← 保护区清单（OOXML 视角）：哪些字节绝对不能碰
+│   ├── docx-protection.md     ← 保护区：哪些字节**和哪些字符序列**绝对不能碰
+│   ├── protection-index.md    ← 文本级保护区（掩码）家族清单（自动生成，24 个家族）
 │   ├── report-format.md       ← 报告契约：report.md / report.json / .applied.json 的字段
 │   └── verification.md        ← 【最后的校验规则】G1–G7、退出码、失败处置
 ├── scripts/
@@ -76,6 +80,7 @@ SKILL.md                       ← 你在这里（边界 + 铁律 + 导航 + 核
 │   ├── docx_apply.py          ← 机械层替换（默认 dry-run，--apply 才写，自动备份）
 │   ├── docx_guard.py          ← 校验器：七项检查，任一失败即回滚
 │   ├── docx_text.py           ← 共享层：段落/run 字符映射、保护区切分、字节级回写
+│   ├── protect.py             ← 文本级保护区（掩码）：路径/代码/命令/版本… 单一真理源
 │   ├── rules_core.py          ← I/S/P 三层规则（可落盘）
 │   └── rules_report.py        ← M/B/F/L/C 五层规则（只出建议）
 ├── assets/

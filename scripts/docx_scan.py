@@ -244,6 +244,9 @@ def main(argv=None) -> int:
                     help="只打印规则目录（markdown），用于生成 references/rule-index.md")
     ap.add_argument("--rules-out", default=None,
                     help="把规则目录直接以 UTF-8 写入该路径（不要用 shell 重定向，会按 GBK 弄坏中文）")
+    ap.add_argument("--list-protections", action="store_true",
+                    help="只打印文本级保护区家族清单，用于生成 references/protection-index.md")
+    ap.add_argument("--protections-out", default=None, help="把保护区清单以 UTF-8 写入该路径")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args(argv)
 
@@ -253,6 +256,17 @@ def main(argv=None) -> int:
             with open(args.rules_out, "w", encoding="utf-8") as fh:
                 fh.write(md + "\n")
             print("已写入 %s" % args.rules_out)
+        else:
+            print(md)
+        return 0
+
+    if args.list_protections or args.protections_out:
+        from protect import families_md
+        md = families_md()
+        if args.protections_out:
+            with open(args.protections_out, "w", encoding="utf-8") as fh:
+                fh.write(md + "\n")
+            print("已写入 %s" % args.protections_out)
         else:
             print(md)
         return 0
