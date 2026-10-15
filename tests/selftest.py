@@ -229,6 +229,13 @@ def main() -> int:
     check(not over, "%d 个该修的没被误保护" % len(MUST_NOT_MASK),
           ("被误保护：%s" % "、".join(over)) if over else "P01/P03/P04/P06/P07/P08/P09/S01/S02/S06 仍能命中")
 
+    # M11 是报告层里唯一看掩码的规则：Windows 路径里的 `\.` 不是 Markdown 转义
+    m11 = [i for i in res["issues"] if i["rule"] == "M11"]
+    check(not [i for i in m11 if i["orig"] == "\\."],
+          r"Windows 路径里的 `\.` 不被 M11 误报",
+          "M11 共 %d 条，全部来自正文转义残留" % len(m11))
+    check(bool(m11), r"正文里的转义残留 \* \_ \( \) 仍报 M11")
+
     print("\n── T7 二次 apply 无事可做 ──")
     rc, out = run(os.path.join(ROOT, "scripts", "docx_apply.py"), CLEAN,
                   "--out", os.path.join(HERE, "clean2.docx"))
